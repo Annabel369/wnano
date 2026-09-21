@@ -2,10 +2,7 @@
 
 Um editor de texto leve para terminal no **Windows 10 e 11**, inspirado no clássico **GNU nano**.
 
-<img width="974" height="513" alt="image" src="https://github.com/user-attachments/assets/2f0ddbcd-90bc-4eff-a0e9-94f065a62095" />
-
-
-Possui numeração de linhas, atalhos intuitivos (<kbd>Ctrl</kbd> + <kbd>S</kbd> para salvar e <kbd>Ctrl</kbd> + <kbd>X</kbd> para sair) e **colorização de sintaxe com comentários em verde e funções em destaque**.
+Possui numeração de linhas, atalhos intuitivos (<kbd>Ctrl</kbd> + <kbd>S</kbd> para salvar, <kbd>Ctrl</kbd> + <kbd>L</kbd> para buscar e <kbd>Ctrl</kbd> + <kbd>X</kbd> para sair) e **colorização de sintaxe com comentários em verde e funções em destaque**.
 
 Disponível tanto em script **Python puro** quanto em **executável (.exe) standalone** que não necessita de Python instalado na máquina.
 
@@ -15,6 +12,8 @@ Disponível tanto em script **Python puro** quanto em **executável (.exe) stand
 
 - **⚡ Atalhos Rápidos:**
   - `Ctrl + S` — Salva o arquivo atual (se não tiver nome, solicita no rodapé).
+  - `Ctrl + L` — Busca texto no arquivo e pula diretamente para a ocorrência ao teclar <kbd>Enter</kbd> (estilo nano). Teclar <kbd>Enter</kbd> com prompt vazio avança para a próxima ocorrência (*wrap-around* automático). Também aceita `:número` para ir direto à linha.
+  - `Ctrl + G` — Pula diretamente para o número de uma linha informada.
   - `Ctrl + X` — Sai do editor com diálogo de confirmação caso haja alterações não salvas (`Sim / Não / Cancelar`).
 - **🔢 Régua com Numeração de Linhas:** Coluna à esquerda que se ajusta automaticamente ao tamanho do documento.
 - **🎨 Destaque de Sintaxe Inteligente:**
@@ -32,6 +31,8 @@ Disponível tanto em script **Python puro** quanto em **executável (.exe) stand
 | Tecla | Ação |
 | :--- | :--- |
 | <kbd>Ctrl</kbd> + <kbd>S</kbd> | Salvar arquivo |
+| <kbd>Ctrl</kbd> + <kbd>L</kbd> / <kbd>Ctrl</kbd> + <kbd>W</kbd> | Buscar texto / encaminhar para ocorrência com <kbd>Enter</kbd> (repete busca com <kbd>Enter</kbd> vazio) |
+| <kbd>Ctrl</kbd> + <kbd>G</kbd> | Ir diretamente para um número de linha |
 | <kbd>Ctrl</kbd> + <kbd>X</kbd> | Sair do editor |
 | <kbd>Setas</kbd> (↑ ↓ ← →) | Movimenta o cursor |
 | <kbd>Home</kbd> / <kbd>End</kbd> | Início / Fim da linha atual |

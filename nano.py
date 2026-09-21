@@ -5,6 +5,7 @@ Nano Python para Windows 10 / 11
 Editor de texto estilo 'nano' para terminal.
 Atalhos:
   Ctrl + S : Salvar
+  Ctrl + L : Buscar (digitar e encaminhar para a linha ao teclar Enter)
   Ctrl + X : Sair
 """
 
@@ -130,6 +131,7 @@ class NanoEditor:
         self.scroll_y = 0 # Rolagem vertical
         self.scroll_x = 0 # Rolagem horizontal
         self.status_msg = ""
+        self.ultimo_termo_busca = ""
         self.carregar_arquivo()
 
     def carregar_arquivo(self):
@@ -191,7 +193,7 @@ class NanoEditor:
             if ch in ('\r', '\n'):
                 break
             elif ch == '\x1b':  # ESC cancela
-                return ""
+                return None
             elif ch == '\x08':  # Backspace
                 if resposta:
                     resposta.pop()
@@ -201,6 +203,116 @@ class NanoEditor:
                 resposta.append(ch)
 
         return "".join(resposta)
+
+    def ir_para_linha(self, num_linha: int):
+        """Move o cursor para a linha especificada (1-indexada)."""
+        total = len(self.linhas)
+        if num_linha < 1:
+            num_linha = 1
+        elif num_linha > total:
+            num_linha = total
+
+        self.cy = num_linha - 1
+        self.cx = 0
+
+        linhas_term, _ = self.obter_dimensoes()
+        altura_edicao = max(1, linhas_term - 3)
+        self.scroll_y = max(0, self.cy - (altura_edicao // 2))
+        self.scroll_x = 0
+        self.status_msg = f"[ Linha {self.cy + 1}/{total} ]"
+
+    def buscar_texto(self):
+        """Busca texto ou linha (Ctrl + L). Pressionar Enter vai para a ocorrência."""
+        prompt = f"Buscar [{self.ultimo_termo_busca}]: " if self.ultimo_termo_busca else "Buscar: "
+        termo = self.perguntar(prompt)
+
+        # Cancelado com ESC
+        if termo is None:
+            self.status_msg = "[ Busca cancelada ]"
+            return
+
+        termo = termo.strip()
+        # Se deu Enter vazio, repete o termo anterior
+        if not termo:
+            if self.ultimo_termo_busca:
+                termo = self.ultimo_termo_busca
+            else:
+                self.status_msg = "[ Digite algo para buscar ]"
+                return
+
+        self.ultimo_termo_busca = termo
+
+        # Suporte a ir direto à linha: :42 ou número de linha se começar com ':'
+        if termo.startswith(":") and termo[1:].strip().isdigit():
+            self.ir_para_linha(int(termo[1:].strip()))
+            return
+
+        termo_lower = termo.lower()
+        total_linhas = len(self.linhas)
+        match_cy = None
+        match_cx = None
+        envolveu = False
+
+        # 1. Procura na linha atual após a posição atual do cursor
+        linha_atual = self.linhas[self.cy]
+        pos = linha_atual.lower().find(termo_lower, self.cx + 1)
+        if pos != -1:
+            match_cy = self.cy
+            match_cx = pos
+        else:
+            # 2. Procura nas linhas seguintes até o final do arquivo
+            for idx in range(self.cy + 1, total_linhas):
+                pos = self.linhas[idx].lower().find(termo_lower)
+                if pos != -1:
+                    match_cy = idx
+                    match_cx = pos
+                    break
+
+        # 3. Se não encontrou até o final, recomeça do topo do arquivo (wrap)
+        if match_cy is None:
+            for idx in range(0, self.cy):
+                pos = self.linhas[idx].lower().find(termo_lower)
+                if pos != -1:
+                    match_cy = idx
+                    match_cx = pos
+                    envolveu = True
+                    break
+
+            # 4. Procura na linha atual do início até a posição do cursor
+            if match_cy is None:
+                pos = linha_atual.lower().find(termo_lower)
+                if pos != -1 and pos <= self.cx:
+                    match_cy = self.cy
+                    match_cx = pos
+                    envolveu = True
+
+        if match_cy is not None:
+            self.cy = match_cy
+            self.cx = match_cx
+            linhas_term, cols_term = self.obter_dimensoes()
+            altura_edicao = max(1, linhas_term - 3)
+
+            # Centraliza a visualização verticalmente na ocorrência
+            if self.cy < self.scroll_y or self.cy >= self.scroll_y + altura_edicao:
+                self.scroll_y = max(0, self.cy - (altura_edicao // 2))
+
+            # Ajusta rolagem horizontal se necessário
+            largura_num = max(3, len(str(total_linhas)))
+            largura_calha = largura_num + 3
+            largura_texto = max(10, cols_term - largura_calha)
+            if self.cx < self.scroll_x or self.cx >= self.scroll_x + largura_texto:
+                self.scroll_x = max(0, self.cx - (largura_texto // 4))
+
+            if envolveu:
+                self.status_msg = f"[ Busca recomeçou do início: Linha {self.cy + 1}, Col {self.cx + 1} ]"
+            else:
+                self.status_msg = f"[ Encontrado na linha {self.cy + 1}, Col {self.cx + 1} ]"
+        else:
+            # Se não achou texto mas o usuário digitou só números, vai para essa linha
+            if termo.isdigit() and 1 <= int(termo) <= total_linhas:
+                self.ir_para_linha(int(termo))
+            else:
+                self.status_msg = f"[ '{termo}' não encontrado ]"
 
     def desenhar(self):
         linhas_term, cols_term = self.obter_dimensoes()
@@ -262,6 +374,7 @@ class NanoEditor:
         # 4. Barra de Atalhos Inferior (Estilo Nano)
         atalhos = (
             f"{ATALHO_TECLA} ^S {ATALHO_DESC} Salvar  "
+            f"{ATALHO_TECLA} ^L {ATALHO_DESC} Buscar  "
             f"{ATALHO_TECLA} ^X {ATALHO_DESC} Sair  "
             f"{DIM}|{RESET} Lin {self.cy + 1}/{total_linhas}, Col {self.cx + 1} "
         )
@@ -289,6 +402,22 @@ class NanoEditor:
         # Ctrl + S: Salvar
         if ch == '\x13':
             self.salvar_arquivo()
+            return True
+
+        # Ctrl + L (e compatibilidade com Ctrl + W / Ctrl + F): Buscar
+        if ch in ('\x0c', '\x17', '\x06'):
+            self.buscar_texto()
+            return True
+
+        # Ctrl + G: Ir diretamente para o número da linha
+        if ch == '\x07':
+            resp = self.perguntar("Ir para a linha: ")
+            if resp and resp.strip().isdigit():
+                self.ir_para_linha(int(resp.strip()))
+            elif resp is not None:
+                self.status_msg = "[ Linha inválida ]"
+            else:
+                self.status_msg = "[ Cancelado ]"
             return True
 
         # Ctrl + X: Sair
