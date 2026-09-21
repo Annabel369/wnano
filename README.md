@@ -2,6 +2,9 @@
 
 Um editor de texto leve para terminal no **Windows 10 e 11**, inspirado no clássico **GNU nano**.
 
+<img width="974" height="513" alt="image" src="https://github.com/user-attachments/assets/2f0ddbcd-90bc-4eff-a0e9-94f065a62095" />
+
+
 Possui numeração de linhas, atalhos intuitivos (<kbd>Ctrl</kbd> + <kbd>S</kbd> para salvar e <kbd>Ctrl</kbd> + <kbd>X</kbd> para sair) e **colorização de sintaxe com comentários em verde e funções em destaque**.
 
 Disponível tanto em script **Python puro** quanto em **executável (.exe) standalone** que não necessita de Python instalado na máquina.
