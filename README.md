@@ -1,5 +1,8 @@
 # 📝 Nano for Windows (nano-win)
 
+<img width="964" height="515" alt="image" src="https://github.com/user-attachments/assets/900a9c31-9b92-4566-a9c9-ca00853ed184" />
+
+
 Um editor de texto leve para terminal no **Windows 10 e 11**, inspirado no clássico **GNU nano**.
 
 Possui numeração de linhas, atalhos intuitivos (<kbd>Ctrl</kbd> + <kbd>S</kbd> para salvar, <kbd>Ctrl</kbd> + <kbd>L</kbd> para buscar e <kbd>Ctrl</kbd> + <kbd>X</kbd> para sair) e **colorização de sintaxe com comentários em verde e funções em destaque**.
